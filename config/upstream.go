@@ -6,12 +6,13 @@ import (
 )
 
 type Upstream interface {
+	GetName() string
 	GetServers() (servers []Server, err error)
 }
 
 var InvalidUpstreamErr = fmt.Errorf("invalid upstream")
 
-func Map2Upstream(m map[string]string, upstream interface{}) error {
+func Map2Upstream(m UpstreamConf, upstream interface{}) error {
 	v := reflect.ValueOf(upstream)
 	if !v.IsValid() {
 		return fmt.Errorf("upstream should not be nil")
@@ -26,7 +27,9 @@ func Map2Upstream(m map[string]string, upstream interface{}) error {
 		tag := f.Tag
 		key := tag.Get("json")
 		vf := v.Field(i)
-		vf.SetString(m[key])
+		if v, ok := m[key].(string); ok {
+			vf.SetString(v)
+		}
 	}
 	return nil
 }
